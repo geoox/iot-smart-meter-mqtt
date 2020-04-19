@@ -5,11 +5,14 @@ var atob = require("atob");
 const cors = require('cors');
 var axios = require("axios");
 const bodyParser = require("body-parser");
+const wakeUpDyno = require("./wokeDyno");
 
 const app = express();
 app.use(cors());
 app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
+
+const API_URL = "https://iot-smart-meter.herokuapp.com/new_recording";
 
 const corsWhitelist = [
   'http://localhost:8070/',
@@ -76,7 +79,6 @@ client.on("message", function (topic, message) {
     type: measurementType,
   };
 
-  const API_URL = "https://iot-smart-meter.herokuapp.com/new_recording";
   axios.post(API_URL, req)
   .then(
     response => console.log("Successfully sent data to DB for meter id:" + req.meter_id), 
@@ -88,4 +90,7 @@ client.on("error", function (error) {
   console.log("Can't connect" + error);
 });
 
-app.listen(port, ()=> console.log("Listening to 8070..."));
+app.listen(port, () => {
+  console.log("Listening to 8070...");
+  wakeUpDyno(API_URL);
+});
