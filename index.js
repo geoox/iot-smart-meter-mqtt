@@ -48,7 +48,7 @@ client.on("message", function (topic, message) {
   const API_URL = "https://iot-smart-meter.herokuapp.com/new_recording";
   axios.post(API_URL, req)
   .then(
-    response => console.log(response), 
+    response => console.log("Successfully sent data to DB for meter id:" + req.meter_id), 
     err => console.log(err)
   );
 });
