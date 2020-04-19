@@ -1,7 +1,38 @@
+const express = require('express')
 var mqtt = require("mqtt");
 var hexToBinary = require("hex-to-binary");
 var atob = require("atob");
+const cors = require('cors');
 var axios = require("axios");
+const bodyParser = require("body-parser");
+
+const app = express();
+app.use(cors());
+app.use(bodyParser.urlencoded({extended: false}));
+app.use(bodyParser.json());
+
+const corsWhitelist = [
+  'http://localhost:8070/',
+  'http://localhost:8100/',
+  'http://localhost:3000/',
+  'http://localhost:8080/'
+]
+
+const port = process.env.PORT || 8070;
+
+app.use((req, res, next)=>{
+  res.header('Access-Control-Allow-Origin', '*');
+  if(corsWhitelist.indexOf(req.headers.origin)!== -1){
+      res.header('Access-Control-Allow-Origin', req.headers.origin);
+      res.header('Access-Control-Allow-Headers', 'Origin, Content-Type, X-Requested-With, Accept, Authorization');
+  }
+  if(req.method === 'OPTIONS'){
+      res.header('Access-Control-Allow-Methods','GET, PUT, POST, PATCH, DELETE');
+      res.status(200).json({});
+  }
+  next();
+})
+
 
 var client = mqtt.connect("mqtts://influx.itu.dk", {
   username: "smartreader",
@@ -56,3 +87,5 @@ client.on("message", function (topic, message) {
 client.on("error", function (error) {
   console.log("Can't connect" + error);
 });
+
+app.listen(port, ()=> console.log("Listening to 8070..."));
