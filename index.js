@@ -13,6 +13,7 @@ app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 
 const API_URL = "https://iot-smart-meter.herokuapp.com/new_recording";
+const API_MQTT_URL = "https://iot-smart-meter-mqtt.herokuapp.com/";
 
 const corsWhitelist = [
   'http://localhost:8070/',
@@ -92,5 +93,5 @@ client.on("error", function (error) {
 
 app.listen(port, () => {
   console.log("Listening to 8070...");
-  wakeUpDyno(API_URL);
+  wakeUpDyno(API_MQTT_URL);
 });
