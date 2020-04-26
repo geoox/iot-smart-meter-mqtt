@@ -1,42 +1,44 @@
-const express = require('express')
+const express = require("express");
 var mqtt = require("mqtt");
 var hexToBinary = require("hex-to-binary");
 var atob = require("atob");
-const cors = require('cors');
+const cors = require("cors");
 var axios = require("axios");
 const bodyParser = require("body-parser");
 const wakeUpDyno = require("./wokeDyno");
 
 const app = express();
 app.use(cors());
-app.use(bodyParser.urlencoded({extended: false}));
+app.use(bodyParser.urlencoded({ extended: false }));
 app.use(bodyParser.json());
 
 const API_URL = "https://iot-smart-meter.herokuapp.com/new_recording";
 const API_MQTT_URL = "https://iot-smart-meter-mqtt.herokuapp.com/";
 
 const corsWhitelist = [
-  'http://localhost:8070/',
-  'http://localhost:8100/',
-  'http://localhost:3000/',
-  'http://localhost:8080/'
-]
+  "http://localhost:8070/",
+  "http://localhost:8100/",
+  "http://localhost:3000/",
+  "http://localhost:8080/",
+];
 
-const port = process.env.PORT || 8070;
+const port = process.env.PORT || 8071;
 
-app.use((req, res, next)=>{
-  res.header('Access-Control-Allow-Origin', '*');
-  if(corsWhitelist.indexOf(req.headers.origin)!== -1){
-      res.header('Access-Control-Allow-Origin', req.headers.origin);
-      res.header('Access-Control-Allow-Headers', 'Origin, Content-Type, X-Requested-With, Accept, Authorization');
+app.use((req, res, next) => {
+  res.header("Access-Control-Allow-Origin", "*");
+  if (corsWhitelist.indexOf(req.headers.origin) !== -1) {
+    res.header("Access-Control-Allow-Origin", req.headers.origin);
+    res.header(
+      "Access-Control-Allow-Headers",
+      "Origin, Content-Type, X-Requested-With, Accept, Authorization"
+    );
   }
-  if(req.method === 'OPTIONS'){
-      res.header('Access-Control-Allow-Methods','GET, PUT, POST, PATCH, DELETE');
-      res.status(200).json({});
+  if (req.method === "OPTIONS") {
+    res.header("Access-Control-Allow-Methods", "GET, PUT, POST, PATCH, DELETE");
+    res.status(200).json({});
   }
   next();
-})
-
+});
 
 var client = mqtt.connect("mqtts://influx.itu.dk", {
   username: "smartreader",
@@ -56,7 +58,6 @@ client.on("message", function (topic, message) {
   const base64Message = message.toString();
   const bin = atob(base64Message);
 
-  // copy pasted from web, might need to quote it..
   let hexString = "";
   for (let i = 0; i < bin.length; i++) {
     const hex = bin.charCodeAt(i).toString(16);
@@ -80,10 +81,10 @@ client.on("message", function (topic, message) {
     type: measurementType,
   };
 
-  axios.post(API_URL, req)
-  .then(
-    response => console.log("Successfully sent data to DB for meter id:" + req.meter_id), 
-    err => console.log(err)
+  axios.post(API_URL, req, { headers: { mqtt_key: "G3.j*8d*~oT8x!w" } }).then(
+    (response) =>
+      console.log("Successfully sent data to DB for meter id:" + req.meter_id),
+    (err) => console.log(err)
   );
 });
 
